@@ -1,0 +1,14 @@
+ckeditor5_container_container:
+  ckeditor5:
+    plugins:
+    - container.Container
+  drupal:
+    label: CKEditor 5 Container
+    library: ckeditor5_container/container
+    admin_library: ckeditor5_container/admin.container
+    toolbar_items:
+      toggleContainer:
+        label: Container
+    elements:
+    - <div>
+    - <div class>
