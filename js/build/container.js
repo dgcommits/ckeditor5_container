@@ -271,41 +271,36 @@ class ContainerEditing extends delegated_corefrom_dll_reference_CKEditor5.Plugin
 }
 // EXTERNAL MODULE: delegated ./ui.js from dll-reference CKEditor5.dll
 var delegated_uifrom_dll_reference_CKEditor5 = __webpack_require__("ckeditor5/src/ui.js");
-;// ./icons/quote.svg
+;// ./js/icons/quote.svg
 /* harmony default export */ const quote = ("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path d=\"M0 1v16.981h4v5.019l7-5.019h13v-16.981h-24zm12 8.028c0 2.337-1.529 3.91-3.684 4.335l-.406-.87c.996-.375 1.637-1.587 1.637-2.493h-1.547v-4h4v3.028zm5 0c0 2.337-1.529 3.91-3.684 4.335l-.406-.87c.996-.375 1.637-1.587 1.637-2.493h-1.547v-4h4v3.028z\"/></svg>");
 ;// ./js/ckeditor5_plugins/container/src/container-ui.js
 
 
-
-
+ // Or your actual SVG path
 
 class ContainerUI extends delegated_corefrom_dll_reference_CKEditor5.Plugin {
   init() {
-    const { editor } = this;
+    const editor = this.editor;
 
-    // This will register the quote toolbar button.
-    editor.ui.componentFactory.add('toggleContainer', (locale) => {
-      const command = editor.commands.get('insertContainer');
-      const buttonView = new delegated_uifrom_dll_reference_CKEditor5.ButtonView(locale);
+    editor.ui.componentFactory.add('toggleContainer', locale => {
+      const view = new delegated_uifrom_dll_reference_CKEditor5.ButtonView(locale);
 
-      // Create the toolbar button.
-      buttonView.set({
-        label: editor.t('Inline quote'),
+      view.set({
+        label: 'Insert Container',
         icon: quote,
         tooltip: true,
-        isToggleable: false,
       });
 
-      // Bind only to isEnabled since this is not a toggle command.
-      buttonView.bind('isEnabled').to(command, 'isEnabled');
-
-      // Execute the command when the button is clicked.
-      this.listenTo(buttonView, 'execute', () => {
-        editor.execute('insertContainer');
-        editor.editing.view.focus();
+      // Execute command when clicked
+      view.on('execute', () => {
+        editor.model.change(writer => {
+          const container = writer.createElement('container');
+          editor.model.insertContent(container);
+          writer.setSelection(container, 'in');
+        });
       });
 
-      return buttonView;
+      return view;
     });
   }
 }

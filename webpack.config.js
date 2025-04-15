@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
-const { styles, builds } = require('@ckeditor/ckeditor5-dev-utils');
+const { styles } = require('@ckeditor/ckeditor5-dev-utils');
 const TerserPlugin = require('terser-webpack-plugin');
 
 function getDirectories(srcpath) {
@@ -11,8 +11,7 @@ function getDirectories(srcpath) {
 }
 
 module.exports = [];
-// Loop through every subdirectory in src, each a different plugin, and build
-// each one in ./build.
+
 getDirectories('./js/ckeditor5_plugins').forEach((dir) => {
   const bc = {
     mode: 'production',
@@ -21,9 +20,7 @@ getDirectories('./js/ckeditor5_plugins').forEach((dir) => {
       minimizer: [
         new TerserPlugin({
           terserOptions: {
-            format: {
-              comments: false,
-            },
+            format: { comments: false },
           },
           test: /\.js(\?.*)?$/i,
           extractComments: false,
@@ -32,12 +29,7 @@ getDirectories('./js/ckeditor5_plugins').forEach((dir) => {
       moduleIds: 'named',
     },
     entry: {
-      path: path.resolve(
-        __dirname,
-        'js/ckeditor5_plugins',
-        dir,
-        'src/index.js',
-      ),
+      path: path.resolve(__dirname, 'js/ckeditor5_plugins', dir, 'src/index.js'),
     },
     output: {
       path: path.resolve(__dirname, './js/build'),
@@ -48,13 +40,38 @@ getDirectories('./js/ckeditor5_plugins').forEach((dir) => {
     },
     plugins: [
       new webpack.DllReferencePlugin({
-        manifest: require('./node_modules/ckeditor5/build/ckeditor5-dll.manifest.json'), // eslint-disable-line global-require, import/no-unresolved
+        manifest: require('./node_modules/ckeditor5/build/ckeditor5-dll.manifest.json'),
         scope: 'ckeditor5/src',
         name: 'CKEditor5.dll',
       }),
     ],
     module: {
-      rules: [{ test: /\.svg$/, use: 'raw-loader' }],
+      rules: [
+        {
+          test: /\.svg$/,
+          use: ['raw-loader'], // ✅ For toolbar icons
+        },
+        {
+          test: /\.css$/,
+          use: [
+            {
+              loader: 'style-loader',
+              options: {
+                injectType: 'singletonStyleTag',
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: styles.getPostCssConfig({
+                themeImporter: {
+                  themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
+                },
+                minify: true,
+              }),
+            },
+          ],
+        },
+      ],
     },
   };
 
